@@ -123,7 +123,7 @@
       <details>
         <summary>How it works</summary>
         <ul>
-          <li>Flip to see Past Tense (VT), Past Participle (VD), and Meaning</li>
+          <li>Flip to see <b>Imperfectum</b> and <b>Perfectum</b>, plus Meaning</li>
           <li>Known moves the verb to Known. Again keeps it in Learning</li>
           <li>Your progress is saved locally in your browser</li>
           <li>Use Export to back up or share. Import to restore</li>
@@ -143,10 +143,10 @@
       <label>Infinitive
         <input id="newBase" placeholder="e.g. lopen" />
       </label>
-      <label>Past Tense (VT)
+      <label>Imperfectum
         <input id="newPast" placeholder="e.g. liep/liepen" />
       </label>
-      <label>Past Participle (VD)
+      <label>Perfectum
         <input id="newPart" placeholder="e.g. gelopen" />
       </label>
       <label>Meaning (English)
@@ -164,7 +164,7 @@
   </div>
 
   <script>
-    // Core list (strong/irregular focus). Excluding modal/willen from core irregulars.
+    // ----- Data -----
     const defaultVerbs = [
       { base:"zijn", past:"was/waren", part:"geweest", meaning:"to be" },
       { base:"hebben", past:"had/hadden", part:"gehad", meaning:"to have" },
@@ -271,7 +271,7 @@
       { base:"wijzen", past:"wees/wezen", part:"gewezen", meaning:"to point" }
     ];
 
-    // Categories by vowel pattern in infinitive
+    // ----- Categorization by vowel pattern -----
     const VOWEL_CATS = ["ij","ie","ui","oe","ou","au","aa","ee","oo","eu","ei","a","e","i","o","u"];
     const categoryOf = (base) => {
       const b = base.toLowerCase();
@@ -279,11 +279,12 @@
       return "other";
     };
 
+    // ----- State -----
     const state = {
       deck: [],
       index: 0,
       flipped: false,
-      progress: {},
+      progress: {}, // base -> unknown | learning | known
       filter: "",
       catFilter: "",
       include: { unknown:true, learning:true, known:false },
@@ -298,6 +299,7 @@
     let customVerbs = saved.custom || [];
     state.progress = saved.progress || {};
 
+    // ----- Build category options -----
     function buildCategories(){
       const select = el('categorySelect');
       const all = [...defaultVerbs, ...customVerbs];
@@ -307,6 +309,7 @@
       select.innerHTML = '<option value="">All categories</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
     }
 
+    // ----- Build study deck -----
     function buildDeck(){
       const query = state.filter.trim().toLowerCase();
       const all = [...defaultVerbs, ...customVerbs];
@@ -329,6 +332,7 @@
       renderCard();
     }
 
+    // ----- Render card -----
     function renderCard(){
       const term = el('term');
       const hint = el('hint');
@@ -351,7 +355,7 @@
       catTag.innerHTML = `<span class="tag">Category: ${categoryOf(v.base)}</span>`;
 
       if(state.flipped){
-        forms.innerHTML = `<span><b>Past (VT)</b>: ${v.past}</span><span><b>Participle (VD)</b>: ${v.part}</span><span><b>Meaning</b>: ${v.meaning || '—'}</span>`;
+        forms.innerHTML = `<span><b>Imperfectum</b>: ${v.past}</span><span><b>Perfectum</b>: ${v.part}</span><span><b>Meaning</b>: ${v.meaning || '—'}</span>`;
         forms.classList.remove('hidden');
         examples.classList.remove('hidden');
         examples.innerHTML = (v.ex||[]).map(s=>`• ${s}`).join('<br>') || 'Add your own example in the Add dialog or via Export JSON.';
@@ -361,6 +365,7 @@
       }
     }
 
+    // ----- Render list -----
     function renderList(){
       const grid = el('list');
       grid.innerHTML = '';
@@ -376,6 +381,7 @@
       }
     }
 
+    // ----- Counts and progress bar -----
     function updateCounts(){
       const all = [...defaultVerbs, ...customVerbs];
       let u=0,l=0,k=0;
@@ -391,6 +397,7 @@
       el('progressPct').textContent=pct+'%';
     }
 
+    // ----- Actions -----
     function mark(status){
       const v = state.deck[state.index];
       if(!v) return;
@@ -399,7 +406,6 @@
       updateCounts();
       next(true);
     }
-
     function flip(){ state.flipped = !state.flipped; renderCard(); }
     function prev(){ if(state.index>0) { state.index--; state.flipped=false; renderCard(); } }
     function next(advance=false){
@@ -408,7 +414,7 @@
       else { buildDeck(); }
     }
 
-    // Controls
+    // ----- Wire up controls -----
     el('flipBtn').onclick=flip;
     el('prevBtn').onclick=prev;
     el('nextBtn').onclick=()=>next(false);
@@ -416,9 +422,16 @@
     el('againBtn').onclick=()=>mark('learning');
     el('resetBtn').onclick=()=>{ if(confirm('Reset all progress.')){ state.progress={}; persist(); updateCounts(); buildDeck(); }}
 
-    // Click-to-flip
+    // Click-to-flip and keyboard
     el('card').onclick = () => flip();
     el('card').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); flip(); }});
+    document.addEventListener('keydown', e=>{
+      if(['ArrowRight','l','L'].includes(e.key)) next(false);
+      else if(['ArrowLeft','h','H'].includes(e.key)) prev();
+      else if(e.key===' '){ e.preventDefault(); flip(); }
+      else if(e.key==='g' || e.key==='G') mark('known');
+      else if(e.key==='a' || e.key==='A') mark('learning');
+    });
 
     // Filters
     el('search').addEventListener('input', e=>{ state.filter = e.target.value; buildDeck(); });
@@ -429,15 +442,6 @@
     el('shuffle').onchange = e=>{ state.shuffle = e.target.checked; buildDeck(); };
     el('autoFlip').onchange = e=>{ state.autoFlip = e.target.checked; };
 
-    // Keyboard
-    document.addEventListener('keydown', e=>{
-      if(['ArrowRight','l','L'].includes(e.key)) next(false);
-      else if(['ArrowLeft','h','H'].includes(e.key)) prev();
-      else if(e.key===' '){ e.preventDefault(); flip(); }
-      else if(e.key==='g' || e.key==='G') mark('known');
-      else if(e.key==='a' || e.key==='A') mark('learning');
-    });
-
     // Export / Import
     el('exportBtn').onclick=()=>{
       const data = { verbs:[...defaultVerbs, ...customVerbs], progress: state.progress };
@@ -447,7 +451,6 @@
       a.href = url; a.download = 'nl-irregular-verbs-progress.json'; a.click();
       URL.revokeObjectURL(url);
     };
-
     el('importFile').addEventListener('change', async (e)=>{
       const file = e.target.files[0]; if(!file) return;
       const txt = await file.text();
@@ -480,7 +483,7 @@
       const part = el('newPart').value.trim();
       const meaning = el('newMeaning').value.trim();
       const ex = el('newExample').value.trim();
-      if(!base || !past || !part){ alert('Please fill infinitive, VT and VD.'); return; }
+      if(!base || !past || !part){ alert('Please fill Infinitive, Imperfectum and Perfectum.'); return; }
       const allBases = new Set([...defaultVerbs, ...customVerbs].map(v=>v.base.toLowerCase()));
       if(allBases.has(base.toLowerCase())){ alert('This verb already exists.'); return; }
       const newVerb = { base, past, part };
