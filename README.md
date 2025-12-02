@@ -38,27 +38,3 @@ Progress is stored locally in your browser (via `localStorage`).
 | `Space` / `Enter` | Flip card |
 | `G` | Mark as Known |
 | `A` | Mark as Learning |
-
----
-
-## 🌐 Hosting via GitHub Pages
-This site is fully static — just one `index.html` file.
-
-1. Go to **Settings → Pages** in your repository.  
-2. Under **Source**, choose `main` branch and `/ (root)` folder.  
-3. Click **Save** and wait about a minute.  
-4. GitHub will publish it at  
-   **https://your-username.github.io/dutch-irregular-verbs/**
-
----
-
-## 💾 Sharing Progress
-Your progress and custom verbs stay on your browser only.  
-To share with friends:
-1. Click **Export** → get `nl-irregular-verbs-progress.json`
-2. Send it to them.
-3. They can click **Import** in their copy of the app.
-
----
-
-## 📂 Project Structure
