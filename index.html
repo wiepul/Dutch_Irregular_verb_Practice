@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dutch Irregular Verbs Flashcards</title>
+  <style>
+    :root { --bg:#0f172a; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22c55e; --accent2:#60a5fa; --warn:#f59e0b; }
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+    header{padding:16px 20px;display:flex;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid #1f2937;background:linear-gradient(180deg,#0b1226,#0f172a)}
+    header h1{font-size:18px;margin:0;letter-spacing:.4px}
+    header .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .btn{border:1px solid #1f2937;background:#0b1324;color:var(--text);padding:8px 12px;border-radius:10px;cursor:pointer}
+    .btn:hover{border-color:#334155}
+    .btn.primary{background:linear-gradient(180deg,#16a34a,#22c55e);color:#062b12;border-color:#16a34a}
+    .btn.secondary{background:linear-gradient(180deg,#2563eb,#60a5fa);color:#051631;border-color:#2563eb}
+    .btn.warn{background:linear-gradient(180deg,#d97706,#f59e0b);color:#2d1600;border-color:#b45309}
+    .chip{padding:6px 10px;border-radius:999px;border:1px solid #1f2937;color:var(--muted);font-size:12px}
+    main{max-width:1000px;margin:0 auto;padding:20px;display:grid;gap:16px;width:100%}
+    .board{display:grid;gap:16px}
+    .toprow{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .search{flex:1;min-width:220px}
+    .search input, select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #1f2937;background:#0b1324;color:var(--text)}
+    .card{background:radial-gradient(1200px 600px at 100% 0%,rgba(96,165,250,.08),transparent 40%),
+           radial-gradient(1200px 600px at 0% 100%,rgba(34,197,94,.08),transparent 40%),
+           #0b1324;border:1px solid #1f2937;border-radius:16px;min-height:260px;display:flex;flex-direction:column;justify-content:center;align-items:center;user-select:none;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+    .card-inner{padding:24px;text-align:center}
+    .term{font-size:36px;font-weight:700;letter-spacing:.6px}
+    .hint{color:var(--muted);margin-top:6px}
+    .forms{margin-top:12px;font-size:18px}
+    .forms span{display:inline-block;padding:3px 8px;border-radius:8px;border:1px dashed #334155;margin:4px}
+    .examples{margin-top:10px;color:#cbd5e1;font-size:14px}
+    .progress{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .bar{height:8px;background:#0b1324;border-radius:8px;border:1px solid #1f2937;overflow:hidden;flex:1;min-width:160px}
+    .bar > i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#60a5fa)}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .stack{display:flex;gap:8px;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+    details{border:1px solid #1f2937;border-radius:12px;padding:10px;background:#0b1324}
+    summary{cursor:pointer}
+    .small{font-size:12px;color:var(--muted)}
+    .pill{font-size:12px;background:#0b1324;border:1px solid #1f2937;border-radius:999px;padding:6px 10px}
+    .hidden{display:none}
+    footer{padding:18px 20px;color:var(--muted);text-align:center;border-top:1px solid #1f2937}
+    a{color:#93c5fd}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px}
+    .modal{background:#0b1324;border:1px solid #1f2937;border-radius:16px;max-width:560px;width:100%;padding:16px}
+    .modal h3{margin:6px 0 12px 0}
+    .modal .row{justify-content:flex-end}
+    .tag{border:1px solid #1f2937;background:#0b1324;border-radius:999px;padding:4px 8px;font-size:11px;color:#cbd5e1}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dutch Irregular Verbs</h1>
+    <div class="controls">
+      <button class="btn" id="prevBtn" title="Previous">◀ Prev</button>
+      <button class="btn" id="flipBtn" title="Flip card">Flip</button>
+      <button class="btn" id="nextBtn" title="Next">Next ▶</button>
+      <button class="btn primary" id="gotItBtn" title="Mark as known">Known ✓</button>
+      <button class="btn secondary" id="againBtn" title="Mark to review again">Again ↺</button>
+      <button class="btn warn" id="resetBtn" title="Reset progress">Reset</button>
+      <button class="btn" id="addWordBtn" title="Add new word">+ New word</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="board">
+      <div class="row toprow">
+        <div class="search">
+          <input id="search" placeholder="Search verbs or filter..." />
+        </div>
+        <div class="stack">
+          <label class="pill"><input type="checkbox" id="studyUnknown" checked> Unknown</label>
+          <label class="pill"><input type="checkbox" id="studyLearning" checked> Learning</label>
+          <label class="pill"><input type="checkbox" id="studyKnown" > Known</label>
+          <label class="pill"><input type="checkbox" id="shuffle" checked> Shuffle</label>
+          <label class="pill"><input type="checkbox" id="autoFlip"> Auto flip on next</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="search" style="max-width:280px">
+          <select id="categorySelect">
+            <option value="">All categories</option>
+          </select>
+        </div>
+        <span class="small">Categories are based on vowel patterns in the infinitive, such as ij, ie, ui, oe, ou, aa, ee, oo, eu, ei.</span>
+      </div>
+
+      <section class="card" id="card" tabindex="0" aria-live="polite">
+        <div class="card-inner">
+          <div class="term" id="term">Click to start</div>
+          <div class="hint" id="hint">Click the card to flip or use Flip</div>
+          <div class="forms hidden" id="forms"></div>
+          <div class="examples hidden" id="examples"></div>
+          <div class="small" id="catTag" style="margin-top:8px"></div>
+        </div>
+      </section>
+
+      <div class="row">
+        <div class="progress" style="flex:1">
+          <span class="chip">Unknown: <b id="countUnknown">0</b></span>
+          <span class="chip">Learning: <b id="countLearning">0</b></span>
+          <span class="chip">Known: <b id="countKnown">0</b></span>
+          <div class="bar"><i id="progressBar" style="width:0%"></i></div>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="stack">
+          <button class="btn" id="exportBtn">Export</button>
+          <label class="btn" for="importFile">Import</label>
+          <input id="importFile" type="file" accept="application/json" class="hidden" />
+        </div>
+      </div>
+
+      <details>
+        <summary>All verbs</summary>
+        <div class="grid" id="list"></div>
+        <p class="small">Tip: click any verb to jump to it.</p>
+      </details>
+
+      <details>
+        <summary>How it works</summary>
+        <ul>
+          <li>Flip to see Past Tense (VT), Past Participle (VD), and Meaning</li>
+          <li>Known moves the verb to Known. Again keeps it in Learning</li>
+          <li>Your progress is saved locally in your browser</li>
+          <li>Use Export to back up or share. Import to restore</li>
+        </ul>
+      </details>
+    </div>
+  </main>
+
+  <footer>
+    Built for practice. No trackers. Keyboard: Left ◀ Right ▶ Space/Enter to flip. G = Known. A = Again.
+  </footer>
+
+  <!-- Modal Add Word -->
+  <div class="modal-backdrop" id="addModal">
+    <div class="modal">
+      <h3>Add New Verb</h3>
+      <label>Infinitive
+        <input id="newBase" placeholder="e.g. lopen" />
+      </label>
+      <label>Past Tense (VT)
+        <input id="newPast" placeholder="e.g. liep/liepen" />
+      </label>
+      <label>Past Participle (VD)
+        <input id="newPart" placeholder="e.g. gelopen" />
+      </label>
+      <label>Meaning (English)
+        <input id="newMeaning" placeholder="e.g. to walk" />
+      </label>
+      <label>Example Sentence (optional)
+        <input id="newExample" placeholder="Ik heb 10 km gelopen." />
+      </label>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="cancelAdd">Cancel</button>
+        <button class="btn primary" id="confirmAdd">Add</button>
+      </div>
+      <p class="small">Tip: added words are saved in your browser and included in Export.</p>
+    </div>
+  </div>
+
+  <script>
+    // Core list (strong/irregular focus). Excluding modal/willen from core irregulars.
+    const defaultVerbs = [
+      { base:"zijn", past:"was/waren", part:"geweest", meaning:"to be" },
+      { base:"hebben", past:"had/hadden", part:"gehad", meaning:"to have" },
+      { base:"gaan", past:"ging/gingen", part:"gegaan", meaning:"to go" },
+      { base:"komen", past:"kwam/kwamen", part:"gekomen", meaning:"to come" },
+      { base:"blijven", past:"bleef/bleven", part:"gebleven", meaning:"to stay, remain" },
+      { base:"worden", past:"werd/werden", part:"geworden", meaning:"to become" },
+      { base:"staan", past:"stond/stonden", part:"gestaan", meaning:"to stand" },
+      { base:"liggen", past:"lag/lagen", part:"gelegen", meaning:"to lie (be located)" },
+      { base:"zitten", past:"zat/zaten", part:"gezeten", meaning:"to sit" },
+      { base:"lopen", past:"liep/liepen", part:"gelopen", meaning:"to walk" },
+      { base:"rijden", past:"reed/reden", part:"gereden", meaning:"to drive, ride" },
+      { base:"vallen", past:"viel/vielen", part:"gevallen", meaning:"to fall" },
+      { base:"geven", past:"gaf/gaven", part:"gegeven", meaning:"to give" },
+      { base:"nemen", past:"nam/namen", part:"genomen", meaning:"to take" },
+      { base:"krijgen", past:"kreeg/kregen", part:"gekregen", meaning:"to get, receive" },
+      { base:"vinden", past:"vond/vonden", part:"gevonden", meaning:"to find" },
+      { base:"denken", past:"dacht/dachten", part:"gedacht", meaning:"to think" },
+      { base:"brengen", past:"bracht/brachten", part:"gebracht", meaning:"to bring" },
+      { base:"houden", past:"hield/hielden", part:"gehouden", meaning:"to hold, keep" },
+      { base:"laten", past:"liet/lieten", part:"gelaten", meaning:"to let, leave" },
+      { base:"zien", past:"zag/zagen", part:"gezien", meaning:"to see" },
+      { base:"kijken", past:"keek/keken", part:"gekeken", meaning:"to look" },
+      { base:"lezen", past:"las/lazen", part:"gelezen", meaning:"to read" },
+      { base:"schrijven", past:"schreef/schreven", part:"geschreven", meaning:"to write" },
+      { base:"spreken", past:"sprak/spraken", part:"gesproken", meaning:"to speak" },
+      { base:"zeggen", past:"zei/zeiden", part:"gezegd", meaning:"to say" },
+      { base:"vragen", past:"vroeg/vroegen", part:"gevraagd", meaning:"to ask" },
+      { base:"weten", past:"wist/wisten", part:"geweten", meaning:"to know (a fact)" },
+      { base:"eten", past:"at/aten", part:"gegeten", meaning:"to eat" },
+      { base:"drinken", past:"dronk/dronken", part:"gedronken", meaning:"to drink" },
+      { base:"slapen", past:"sliep/sliepen", part:"geslapen", meaning:"to sleep" },
+      { base:"helpen", past:"hielp/hielpen", part:"geholpen", meaning:"to help" },
+      { base:"bieden", past:"bood/boden", part:"geboden", meaning:"to offer" },
+      { base:"bidden", past:"bad/baden", part:"gebeden", meaning:"to pray" },
+      { base:"beginnen", past:"begon/begonnen", part:"begonnen", meaning:"to begin" },
+      { base:"kiezen", past:"koos/kozen", part:"gekozen", meaning:"to choose" },
+      { base:"kopen", past:"kocht/kochten", part:"gekocht", meaning:"to buy" },
+      { base:"verkopen", past:"verkocht/verkochten", part:"verkocht", meaning:"to sell" },
+      { base:"vergeten", past:"vergat/vergaten", part:"vergeten", meaning:"to forget" },
+      { base:"verliezen", past:"verloor/verloren", part:"verloren", meaning:"to lose" },
+      { base:"winnen", past:"won/wonnen", part:"gewonnen", meaning:"to win" },
+      { base:"stelen", past:"stal/stalen", part:"gestolen", meaning:"to steal" },
+      { base:"trekken", past:"trok/trokken", part:"getrokken", meaning:"to pull, draw" },
+      { base:"dragen", past:"droeg/droegen", part:"gedragen", meaning:"to carry, wear" },
+      { base:"varen", past:"voer/voeren", part:"gevaren", meaning:"to sail" },
+      { base:"vliegen", past:"vloog/vlogen", part:"gevlogen", meaning:"to fly" },
+      { base:"zwemmen", past:"zwom/zwommen", part:"gezwommen", meaning:"to swim" },
+      { base:"springen", past:"sprong/sprongen", part:"gesprongen", meaning:"to jump" },
+      { base:"schieten", past:"schoot/schoten", part:"geschoten", meaning:"to shoot" },
+      { base:"schijnen", past:"scheen/schenen", part:"geschenen", meaning:"to shine, seem" },
+      { base:"lijken", past:"leek/leken", part:"geleken", meaning:"to seem" },
+      { base:"roepen", past:"riep/riepen", part:"geroepen", meaning:"to call" },
+      { base:"sluiten", past:"sloot/sloten", part:"gesloten", meaning:"to close" },
+      { base:"snijden", past:"sneed/sneden", part:"gesneden", meaning:"to cut" },
+      { base:"glijden", past:"gleed/gleden", part:"gegleden", meaning:"to slide" },
+      { base:"grijpen", past:"greep/grepen", part:"gegrepen", meaning:"to grab" },
+      { base:"hangen", past:"hing/hingen", part:"gehangen", meaning:"to hang" },
+      { base:"klinken", past:"klonk/klonken", part:"geklonken", meaning:"to sound" },
+      { base:"klimmen", past:"klom/klommen", part:"geklommen", meaning:"to climb" },
+      { base:"kunnen", past:"kon/konden", part:"gekund", meaning:"to be able to" },
+      { base:"mogen", past:"mocht/mochten", part:"gemogen", meaning:"may, be allowed to" },
+      { base:"moeten", past:"moest/moesten", part:"gemoeten", meaning:"must, have to" },
+      { base:"scheiden", past:"scheidde/scheidden", part:"gescheiden", meaning:"to separate, divorce" },
+      { base:"schrikken", past:"schrok/schrokken", part:"geschrokken", meaning:"to be startled" },
+      { base:"smelten", past:"smolt/smolten", part:"gesmolten", meaning:"to melt" },
+      { base:"sterven", past:"stierf/stierven", part:"gestorven", meaning:"to die" },
+      { base:"vechten", past:"vocht/vochten", part:"gevochten", meaning:"to fight" },
+      { base:"wassen", past:"waste/wasten", part:"gewassen", meaning:"to wash" },
+      { base:"wegen", past:"woog/wogen", part:"gewogen", meaning:"to weigh" },
+      { base:"werpen", past:"wierp/wierpen", part:"geworpen", meaning:"to throw" },
+      { base:"zoeken", past:"zocht/zochten", part:"gezocht", meaning:"to search" },
+      { base:"binden", past:"bond/bonden", part:"gebonden", meaning:"to bind" },
+      { base:"blazen", past:"blies/bliezen", part:"geblazen", meaning:"to blow" },
+      { base:"breken", past:"brak/braken", part:"gebroken", meaning:"to break" },
+      { base:"duiken", past:"dook/doken", part:"gedoken", meaning:"to dive" },
+      { base:"genieten", past:"genoot/genoten", part:"genoten", meaning:"to enjoy" },
+      { base:"meten", past:"mat/maten", part:"gemeten", meaning:"to measure" },
+      { base:"schelden", past:"schold/scholden", part:"gescholden", meaning:"to scold, curse" },
+      { base:"zenden", past:"zond/zonden", part:"gezonden", meaning:"to send" },
+      { base:"zwijgen", past:"zweeg/zwegen", part:"gezwegen", meaning:"to be silent" },
+      { base:"bakken", past:"bakte/bakten", part:"gebakken", meaning:"to bake" },
+      { base:"bewegen", past:"bewoog/bewogen", part:"bewogen", meaning:"to move" },
+      { base:"bezoeken", past:"bezocht/bezochten", part:"bezocht", meaning:"to visit" },
+      { base:"bewijzen", past:"bewees/bewezen", part:"bewezen", meaning:"to prove" },
+      { base:"bevriezen", past:"bevroor/bevroren", part:"bevroren", meaning:"to freeze" },
+      { base:"bezitten", past:"bezat/bezetten", part:"bezeten", meaning:"to possess" },
+      { base:"doen", past:"deed/deden", part:"gedaan", meaning:"to do" },
+      { base:"raden", past:"raadde/raadden", part:"geraden", meaning:"to guess" },
+      { base:"slaan", past:"sloeg/sloegen", part:"geslagen", meaning:"to hit" },
+      { base:"smijten", past:"smeet/smeten", part:"gesmeten", meaning:"to fling, chuck" },
+      { base:"stijgen", past:"steeg/stegen", part:"gestegen", meaning:"to rise" },
+      { base:"stuiven", past:"stoof/stoven", part:"gestoven", meaning:"to spray, dash" },
+      { base:"strijken", past:"streek/streken", part:"gestreken", meaning:"to iron, stroke" },
+      { base:"stinken", past:"stonk/stonken", part:"gestonken", meaning:"to stink" },
+      { base:"treffen", past:"trof/troffen", part:"getroffen", meaning:"to hit, affect" },
+      { base:"verdragen", past:"verdroeg/verdroegen", part:"verdragen", meaning:"to tolerate" },
+      { base:"vergelijken", past:"vergeleek/vergeleken", part:"vergeleken", meaning:"to compare" },
+      { base:"verheffen", past:"verhief/verhieven", part:"verheven", meaning:"to raise, exalt" },
+      { base:"verwerpen", past:"verwierp/verwierpen", part:"verworpen", meaning:"to reject" },
+      { base:"verzenden", past:"verzond/verzonden", part:"verzonden", meaning:"to dispatch" },
+      { base:"vriezen", past:"vroor/vroren", part:"gevroren", meaning:"to freeze (weather)" },
+      { base:"waaien", past:"waaide/waaiden", part:"gewaaid", meaning:"to blow (wind)" },
+      { base:"wijzen", past:"wees/wezen", part:"gewezen", meaning:"to point" }
+    ];
+
+    // Categories by vowel pattern in infinitive
+    const VOWEL_CATS = ["ij","ie","ui","oe","ou","au","aa","ee","oo","eu","ei","a","e","i","o","u"];
+    const categoryOf = (base) => {
+      const b = base.toLowerCase();
+      for(const v of VOWEL_CATS){ if(b.includes(v)) return v; }
+      return "other";
+    };
+
+    const state = {
+      deck: [],
+      index: 0,
+      flipped: false,
+      progress: {},
+      filter: "",
+      catFilter: "",
+      include: { unknown:true, learning:true, known:false },
+      shuffle:true,
+      autoFlip:false
+    };
+
+    const el = id => document.getElementById(id);
+    const persist = () => localStorage.setItem('ivfc-data', JSON.stringify({progress:state.progress, custom:customVerbs}));
+
+    const saved = JSON.parse(localStorage.getItem('ivfc-data')||'{}');
+    let customVerbs = saved.custom || [];
+    state.progress = saved.progress || {};
+
+    function buildCategories(){
+      const select = el('categorySelect');
+      const all = [...defaultVerbs, ...customVerbs];
+      const set = new Set();
+      for(const v of all){ set.add(categoryOf(v.base)); }
+      const cats = Array.from(set).sort();
+      select.innerHTML = '<option value="">All categories</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+    }
+
+    function buildDeck(){
+      const query = state.filter.trim().toLowerCase();
+      const all = [...defaultVerbs, ...customVerbs];
+      let filtered = all.filter(v => !query || v.base.toLowerCase().includes(query) || v.past.toLowerCase().includes(query) || v.part.toLowerCase().includes(query) || (v.meaning||'').toLowerCase().includes(query));
+      if(state.catFilter){ filtered = filtered.filter(v => categoryOf(v.base)===state.catFilter); }
+      filtered = filtered.filter(v => {
+        const s = state.progress[v.base] || 'unknown';
+        if(s==='unknown' && state.include.unknown) return true;
+        if(s==='learning' && state.include.learning) return true;
+        if(s==='known' && state.include.known) return true;
+        return false;
+      });
+      if(state.shuffle){
+        for(let i=filtered.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [filtered[i],filtered[j]]=[filtered[j],filtered[i]]; }
+      }
+      state.deck = filtered;
+      state.index = 0;
+      updateCounts();
+      renderList();
+      renderCard();
+    }
+
+    function renderCard(){
+      const term = el('term');
+      const hint = el('hint');
+      const forms = el('forms');
+      const examples = el('examples');
+      const catTag = el('catTag');
+
+      if(state.deck.length===0){
+        term.textContent = 'No cards to study';
+        hint.textContent = 'Adjust filters or import more verbs';
+        forms.classList.add('hidden');
+        examples.classList.add('hidden');
+        catTag.textContent='';
+        return;
+      }
+      const v = state.deck[state.index];
+      const status = state.progress[v.base] || 'unknown';
+      term.textContent = v.base;
+      hint.innerHTML = `Status: <b>${status}</b>`;
+      catTag.innerHTML = `<span class="tag">Category: ${categoryOf(v.base)}</span>`;
+
+      if(state.flipped){
+        forms.innerHTML = `<span><b>Past (VT)</b>: ${v.past}</span><span><b>Participle (VD)</b>: ${v.part}</span><span><b>Meaning</b>: ${v.meaning || '—'}</span>`;
+        forms.classList.remove('hidden');
+        examples.classList.remove('hidden');
+        examples.innerHTML = (v.ex||[]).map(s=>`• ${s}`).join('<br>') || 'Add your own example in the Add dialog or via Export JSON.';
+      } else {
+        forms.classList.add('hidden');
+        examples.classList.add('hidden');
+      }
+    }
+
+    function renderList(){
+      const grid = el('list');
+      grid.innerHTML = '';
+      const all = state.deck;
+      for(const [i,v] of all.entries()){
+        const btn = document.createElement('button');
+        btn.className='btn';
+        btn.style.width='100%';
+        btn.style.textAlign='left';
+        btn.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>${v.base} · ${v.past} · ${v.part}</span><span class="tag">${categoryOf(v.base)}</span></div>`;
+        btn.onclick=()=>{ state.index=i; state.flipped=false; renderCard(); window.scrollTo({top:0,behavior:'smooth'}); };
+        grid.appendChild(btn);
+      }
+    }
+
+    function updateCounts(){
+      const all = [...defaultVerbs, ...customVerbs];
+      let u=0,l=0,k=0;
+      for(const v of all){
+        const s = state.progress[v.base] || 'unknown';
+        if(s==='unknown') u++; else if(s==='learning') l++; else if(s==='known') k++;
+      }
+      el('countUnknown').textContent=u;
+      el('countLearning').textContent=l;
+      el('countKnown').textContent=k;
+      const pct = Math.round(k*100/Math.max(1, all.length));
+      el('progressBar').style.width=pct+'%';
+      el('progressPct').textContent=pct+'%';
+    }
+
+    function mark(status){
+      const v = state.deck[state.index];
+      if(!v) return;
+      state.progress[v.base] = status;
+      persist();
+      updateCounts();
+      next(true);
+    }
+
+    function flip(){ state.flipped = !state.flipped; renderCard(); }
+    function prev(){ if(state.index>0) { state.index--; state.flipped=false; renderCard(); } }
+    function next(advance=false){
+      if(state.autoFlip && !state.flipped && !advance){ state.flipped=true; return renderCard(); }
+      if(state.index < state.deck.length-1){ state.index++; state.flipped=false; renderCard(); }
+      else { buildDeck(); }
+    }
+
+    // Controls
+    el('flipBtn').onclick=flip;
+    el('prevBtn').onclick=prev;
+    el('nextBtn').onclick=()=>next(false);
+    el('gotItBtn').onclick=()=>mark('known');
+    el('againBtn').onclick=()=>mark('learning');
+    el('resetBtn').onclick=()=>{ if(confirm('Reset all progress.')){ state.progress={}; persist(); updateCounts(); buildDeck(); }}
+
+    // Click-to-flip
+    el('card').onclick = () => flip();
+    el('card').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); flip(); }});
+
+    // Filters
+    el('search').addEventListener('input', e=>{ state.filter = e.target.value; buildDeck(); });
+    el('categorySelect').addEventListener('change', e=>{ state.catFilter = e.target.value; buildDeck(); });
+    el('studyUnknown').onchange = e=>{ state.include.unknown = e.target.checked; buildDeck(); };
+    el('studyLearning').onchange = e=>{ state.include.learning = e.target.checked; buildDeck(); };
+    el('studyKnown').onchange = e=>{ state.include.known = e.target.checked; buildDeck(); };
+    el('shuffle').onchange = e=>{ state.shuffle = e.target.checked; buildDeck(); };
+    el('autoFlip').onchange = e=>{ state.autoFlip = e.target.checked; };
+
+    // Keyboard
+    document.addEventListener('keydown', e=>{
+      if(['ArrowRight','l','L'].includes(e.key)) next(false);
+      else if(['ArrowLeft','h','H'].includes(e.key)) prev();
+      else if(e.key===' '){ e.preventDefault(); flip(); }
+      else if(e.key==='g' || e.key==='G') mark('known');
+      else if(e.key==='a' || e.key==='A') mark('learning');
+    });
+
+    // Export / Import
+    el('exportBtn').onclick=()=>{
+      const data = { verbs:[...defaultVerbs, ...customVerbs], progress: state.progress };
+      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'nl-irregular-verbs-progress.json'; a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    el('importFile').addEventListener('change', async (e)=>{
+      const file = e.target.files[0]; if(!file) return;
+      const txt = await file.text();
+      try{
+        const json = JSON.parse(txt);
+        const verbs = Array.isArray(json.verbs)? json.verbs : (Array.isArray(json)? json : []);
+        const defaultBases = new Set(defaultVerbs.map(v=>v.base));
+        customVerbs = verbs.filter(v=>v.base && !defaultBases.has(v.base));
+        if(json.progress && typeof json.progress==='object') state.progress = json.progress;
+        persist();
+        buildCategories();
+        buildDeck();
+        alert('Imported.');
+      }catch(err){ alert('Invalid JSON file'); }
+      e.target.value='';
+    });
+
+    // Add new word modal
+    const modal = el('addModal');
+    const showModal = () => { modal.style.display='flex'; setTimeout(()=>el('newBase').focus(), 0); };
+    const hideModal = () => { modal.style.display='none'; el('newBase').value=''; el('newPast').value=''; el('newPart').value=''; el('newMeaning').value=''; el('newExample').value=''; };
+
+    el('addWordBtn').onclick = showModal;
+    el('cancelAdd').onclick = hideModal;
+    modal.addEventListener('click', e=>{ if(e.target===modal) hideModal(); });
+
+    el('confirmAdd').onclick = () => {
+      const base = el('newBase').value.trim();
+      const past = el('newPast').value.trim();
+      const part = el('newPart').value.trim();
+      const meaning = el('newMeaning').value.trim();
+      const ex = el('newExample').value.trim();
+      if(!base || !past || !part){ alert('Please fill infinitive, VT and VD.'); return; }
+      const allBases = new Set([...defaultVerbs, ...customVerbs].map(v=>v.base.toLowerCase()));
+      if(allBases.has(base.toLowerCase())){ alert('This verb already exists.'); return; }
+      const newVerb = { base, past, part };
+      if(meaning) newVerb.meaning = meaning;
+      if(ex) newVerb.ex = [ex];
+      customVerbs.push(newVerb);
+      persist();
+      buildCategories();
+      buildDeck();
+      hideModal();
+    };
+
+    // Init
+    buildCategories();
+    buildDeck();
+  </script>
+</body>
+</html>
